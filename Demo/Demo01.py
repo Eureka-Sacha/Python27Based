@@ -1,7 +1,7 @@
 import urllib2
 import urllib
 
-url = 'http://localhost:8081/ririshun/user/login'
+url = 'http://180.153.95.10/ririshun/user/login'
 user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
 values = {'userId': '111111',
           'password': '11111'}
