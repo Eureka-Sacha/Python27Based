@@ -72,5 +72,24 @@ while n > 0:
     sum = sum + n
     n = n - 2
 print sum
+
+# dict  *
+# 相当于Map的字典对象,  使用K-V键值对的Hash存储方式
+d = {'Michael': 95, 'Bob': 75, 'Tracy': 85}
+print d.get('Michael')
+d.pop('Bob')
+print d
+# set *
+# 同Java中的set 一组Key的集合但没有value
+# 要创建一个set，需要提供一个list作为输入集合：重复元素在set中自动被过滤
+s = set([1, 1, 2, 2, 3, 3])
+s.add(4)
+s.remove(1)
+print s
+# set可以看成数学意义上的无序和无重复元素的集合，因此，两个set可以做数学意义上的交集、并集等操作：
+s1 = set([1, 2, 3])
+s2 = set([2, 3, 4])
+print s1 & s2
+print s1 | s2
 # 控制台输入
 print raw_input('input something to exit:')
