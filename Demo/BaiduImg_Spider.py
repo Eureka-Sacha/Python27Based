@@ -11,8 +11,9 @@ import urllib2
 import re
 
 
-class BaiduImg_Spider:
+class baiduImgSpider:
     """百度图片搜索下载爬虫"""
+
     def __init__(self):
         """构造函数,初始化基本参数.如搜索关键词,页数,header等..
         --v0.1  单线程无代理下载
@@ -52,7 +53,7 @@ class BaiduImg_Spider:
 
     def __setInit(self):
         """私有函数:设置搜索关键词"""
-        print '-------%s启动------' % self.baiduimg_spider
+
         print '请输入搜索关键词与分辨率,用|分割(例:\'新垣结衣|1920|1080\'):'
         while True:
             try:
@@ -99,7 +100,7 @@ class BaiduImg_Spider:
                     self.data['pn'] = str((i - 1) * 20)
                     self.headers['Referer'] = self.url + '?' + urllib.urlencode(self.data)
                     req = urllib2.Request(self.url + '?' + urllib.urlencode(self.data), headers=self.headers)
-                    Response = urllib2.urlopen(req)
+                    Response = urllib2.urlopen(req,timeout = 2)
                     Page = Response.read()
                     unicodePage = Page.decode("UTF-8")
                     imgurllist = re.findall(
@@ -113,7 +114,7 @@ class BaiduImg_Spider:
                                      'Accept-Language': 'zh-CN,zh;q=0.8',
                                      }
                         try:
-                            connection = urllib2.build_opener().open(urllib2.Request(imgurl, headers=headers))
+                            connection = urllib2.build_opener().open(urllib2.Request(imgurl, headers=headers),timeout = 2)
                         except Exception, e:
                             print '###', e
                             print '###', imgurl
@@ -146,7 +147,6 @@ class BaiduImg_Spider:
             print '以下为下载失败图片:'
             for erroimg in self.erroimgs:
                 print erroimg
-        print '-------%s结束------' % self.baiduimg_spider
 
 
     def __downloadimg(self):
@@ -171,9 +171,13 @@ class BaiduImg_Spider:
 
     def startModel(self):
         """爬虫入口函数"""
+        print '-------%s启动------' % self.baiduimg_spider
         self.__setInit()
         self.__getPage()
+        print '-------%s结束------' % self.baiduimg_spider
 
-# 开启爬虫
-Spider = BaiduImg_Spider()
-Spider.startModel()
+
+if __name__ == '__main__':
+    # 开启爬虫
+    Spider = baiduImgSpider()
+    Spider.startModel()

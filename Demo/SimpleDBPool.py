@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+# 复制粘贴自DBUtils 中的SimpleDBPool
 __author__ = '奎'
 __version__ = '0.1'
+
 import MySQLdb
 
 
@@ -53,7 +55,7 @@ class DBPool:
         if threadsafety == 0:
             raise NotSupportedError('Database module does not support any level of threading.')
         elif threadsafety == 1:
-            import Queue
+            from Queue import Queue
 
             self._queue = Queue(maxconnections)  # create the queue
             self.connection = self._unthreadsafe_get_connection
@@ -63,10 +65,10 @@ class DBPool:
         elif threadsafety in (2, 3):
             from threading import Lock
 
-            self._lock = Lock()  # create a lock object to be used later
-            self._nextConnection = 0  # index of the next connection to be used
+            self._lock = Lock()  # create a lock object to be used later   创建一个线程锁,供后面使用
+            self._nextConnection = 0  # index of the next connection to be used  下一个将被获取的connection编号
             self._connections = []  # the list of connections
-            self.connection = self._threadsafe_get_connection
+            self.connection = self._threadsafe_get_connection  #
             self.addConnection = self._threadsafe_add_connection
             self.returnConnection = self._threadsafe_return_connection
         else:
@@ -74,12 +76,13 @@ class DBPool:
                 "Database module threading support cannot be determined.")
         # Establish all database connections (it would be better to
         # only establish a part of them now, and the rest on demand).
-        for i in range(maxconnections):
+        for i in range(int(maxconnections)):
             self.addConnection(dbapi.connect(*args, **kwargs))
 
 
     def _unthreadsafe_get_connection(self):
-        """Get a connection from the pool."""
+        """Get a connection from the pool.
+        从连接池获取一个连接"""
         return PooledDBConnection(self, self._queue.get())
 
     def _unthreadsafe_add_connection(self, con):
@@ -102,9 +105,9 @@ class DBPool:
 
     def _threadsafe_get_connection(self):
         """Get a connection from the pool."""
-        self._lock.acquire()
+        self._lock.acquire()  # 锁定线程
         try:
-            next = self._nextConnection
+            next = self._nextConnection  #
             con = PooledDBConnection(self, self._connections[next])
             next += 1
             if next >= len(self._connections):
@@ -126,17 +129,171 @@ class DBPool:
         pass
 
 
-pool = DBPool(MySQLdb, 10, host='localhost', port='3306', user='root', password='', database='mypythondatabase')
+class MySqlDBPool():
+    __pool = None
 
-db = pool.connection()
-cursor = db.cursor()
-sql = u'select * from proxyIP '
-try:
-    cursor.execute(sql)
-    results = cursor.fetchall()
-    for row in results:
-        print row[0]
-        print row[1]
-except Exception, e:
-    print e
-db.close()
+    def __init__(self):
+        """
+        数据库构造函数，从连接池中取出连接，并生成操作游标
+        """
+        self._conn = MySqlDBPool.__getConn()
+        self._cursor = self._conn.cursor()
+
+    @staticmethod
+    def __getConn():
+        if MySqlDBPool.__pool is None:
+            options = MySqlDBPool.DBConfParser()
+            __pool = DBPool(creator=MySQLdb, maxcached=options['db_maxconn'],
+                            host=options['db_host'], port=options['db_port'], user=options['db_user'],
+                            passwd=options['db_pass'],
+                            db=options['db_name'])
+        return __pool.connection()
+
+    @staticmethod
+    def DBConfParser():
+        """@staticmethod注解标识为静态方法 相当于java中的 static
+        另: @classmethod注解的意思为类方法.
+        """
+        import ConfigParser
+
+        conf = ConfigParser.ConfigParser()
+        conf.readfp(open('../conf/conf.conf', 'r+'))
+        option = conf.options('db')
+        options = {}
+        for o in option:
+            something = conf.get('db', o)
+            options[o] = something
+        return options
+
+    def getAll(self, sql, param=None):
+        """
+        @summary: 执行查询，并取出所有结果集
+        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param param: 可选参数，条件列表值（元组/列表）
+        @return: result list/boolean 查询到的结果集
+        """
+        if param is None:
+            count = self._cursor.execute(sql)
+        else:
+            count = self._cursor.execute(sql, param)
+        if count > 0:
+            result = self._cursor.fetchall()
+        else:
+            result = False
+        return result
+
+    def getOne(self, sql, param=None):
+        """
+        @summary: 执行查询，并取出第一条
+        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param param: 可选参数，条件列表值（元组/列表）
+        @return: result list/boolean 查询到的结果集
+        """
+        if param is None:
+            count = self._cursor.execute(sql)
+        else:
+            count = self._cursor.execute(sql, param)
+        if count > 0:
+            result = self._cursor.fetchone()
+        else:
+            result = False
+        return result
+
+    def getMany(self, sql, num, param=None):
+        """
+        @summary: 执行查询，并取出num条结果
+        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
+        @param num:取得的结果条数
+        @param param: 可选参数，条件列表值（元组/列表）
+        @return: result list/boolean 查询到的结果集
+        """
+        if param is None:
+            count = self._cursor.execute(sql)
+        else:
+            count = self._cursor.execute(sql, param)
+        if count > 0:
+            result = self._cursor.fetchmany(num)
+        else:
+            result = False
+        return result
+
+    def insertOne(self, sql, value):
+        """
+        @summary: 向数据表插入一条记录
+        @param sql:要插入的ＳＱＬ格式
+        @param value:要插入的记录数据tuple/list
+        @return: insertId 受影响的行数
+        """
+        self._cursor.execute(sql, value)
+        return self.__getInsertId()
+
+    def insertMany(self, sql, values):
+        """
+        @summary: 向数据表插入多条记录
+        @param sql:要插入的ＳＱＬ格式
+        @param values:要插入的记录数据tuple(tuple)/list[list]
+        @return: count 受影响的行数
+        """
+        count = self._cursor.executemany(sql, values)
+        return count
+
+    def __getInsertId(self):
+        """
+        获取当前连接最后一次插入操作生成的id,如果没有则为０
+        """
+        self._cursor.execute("SELECT @@IDENTITY AS id")
+        result = self._cursor.fetchall()
+        return result[0]['id']
+
+    def __query(self, sql, param=None):
+        if param is None:
+            count = self._cursor.execute(sql)
+        else:
+            count = self._cursor.execute(sql, param)
+        return count
+
+    def update(self, sql, param=None):
+        """
+        @summary: 更新数据表记录
+        @param sql: ＳＱＬ格式及条件，使用(%s,%s)
+        @param param: 要更新的  值 tuple/list
+        @return: count 受影响的行数
+        """
+        return self.__query(sql, param)
+
+    def delete(self, sql, param=None):
+        """
+        @summary: 删除数据表记录
+        @param sql: ＳＱＬ格式及条件，使用(%s,%s)
+        @param param: 要删除的条件 值 tuple/list
+        @return: count 受影响的行数
+        """
+        return self.__query(sql, param)
+
+    def begin(self):
+        """
+        @summary: 开启事务
+        """
+        self._conn.autocommit(0)
+
+    def end(self, option='commit'):
+        """
+        @summary: 结束事务
+        """
+        if option == 'commit':
+            self._conn.commit()
+        else:
+            self._conn.rollback()
+
+    def dispose(self, isEnd=1):
+        """
+        @summary: 释放连接池资源
+        """
+        if isEnd == 1:
+            self.end('commit')
+        else:
+            self.end('rollback')
+        self._cursor.close()
+        self._conn.close()
+
+
