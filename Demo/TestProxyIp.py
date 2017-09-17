@@ -7,7 +7,7 @@ from Demo.RecordSet import RecordSet
 __author__ = '奎'
 
 
-class proxyIp():
+class ProxyIp:
     """
     """
 
@@ -19,7 +19,8 @@ class proxyIp():
         self.id = id
         self.ip = ip
 
-    def test_proxy_ip(self):
+    @staticmethod
+    def test_proxy_ip():
         rs = RecordSet()
         rs.execute_sql('select * from proxyip where flag in (2,3) and type="HTTP"')
         while rs.next():
@@ -40,7 +41,7 @@ class proxyIp():
                 rs2.execute_sql(ur'update proxyIP set verificationtime=%s,flag=%s where id =%s', t)
 
     @staticmethod
-    def test_http_proxyip(proxyip, testurl='http://httpbin.org/ip'):
+    def test_http_proxy_ip(proxyip, testurl='http://httpbin.org/ip'):
         proxy = urllib2.ProxyHandler({'http': proxyip.ip})
         opener = urllib2.build_opener(proxy)
         diff = -1

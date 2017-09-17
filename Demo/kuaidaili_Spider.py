@@ -39,7 +39,7 @@ class KuaiDaiLi():
         rs = RecordSet()
         rs.execute_sql('select * from proxyip where flag=1 and type="HTTP"')
         while rs.next():
-            proxyip = TestProxyIp.proxyIp(id=rs.getvalue('id'), ip=rs.getvalue('ip') + ':' + str(rs.getvalue('prot')))
+            proxyip = TestProxyIp.ProxyIp(id=rs.getvalue('id'), ip=rs.getvalue('ip') + ':' + str(rs.getvalue('prot')))
             self._proxypool.append(proxyip)
 
 
@@ -47,7 +47,7 @@ class KuaiDaiLi():
         """
         从数据库和本地代理池删除失效的代理IP
         """
-        if not TestProxyIp.proxyIp.test_http_proxyip(proxyip, testurl='http://www.kuaidaili.com/free/inha/1/'):
+        if not TestProxyIp.ProxyIp.test_http_proxyip(proxyip, testurl='http://www.kuaidaili.com/free/inha/1/'):
             self._proxypool.remove(proxyip)
             return True
         return False

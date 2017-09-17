@@ -4,7 +4,7 @@ from SimpleDBPool import DBPool
 import MySQLdb
 
 
-class RecordSet():
+class RecordSet:
     __POOL = None
 
     def __init__(self):
@@ -52,6 +52,9 @@ class RecordSet():
         @sql=数据库语句
         @num=返回条数(并不等于分页)
         @param=insert,update参数(tuple or  list)
+        :param num:
+        :param param:
+        :param sql:
         """
         self.begin()  # 开始一个事物
         result = False

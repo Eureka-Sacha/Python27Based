@@ -5,7 +5,7 @@ import MySQLdb
 from DBUtils.PooledDB import PooledDB
 
 
-class RecordSet():
+class RecordSet:
     __POOL = None
 
     def __init__(self):

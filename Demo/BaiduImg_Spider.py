@@ -32,13 +32,13 @@ class baiduImgSpider:
         self.width = 1920  # 图片长度
         self.height = 1080  # 图片高度
         self.headers = {  # header
-                          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
-                          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                          'Accept-Language': 'zh-CN,zh;q=0.8',
-                          # 'Accept-Encoding': 'gzip, deflate, sdch',
-                          'Referer': 'http://image.baidu.com/search/flip',
-                          'Cookie': 'BDqhfp=%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%2B1920x1080%26%260-10-1undefined%26%260%26%261; BAIDUID=CE199AC1B0DC673D5BB2C147C49FD279:FG=1; PSTM=1472647733; BIDUPSID=AB9E31BFF15379B40D2F3E260F795519; MCITY=-236%3A; BDUSS=VBbC16eUUtMURpaWQxZFNjak1nUTU0QWkzV0J1LXhRdVJHT09MVDlWWlNsaTVZSVFBQUFBJCQAAAAAAAAAAAEAAACPTAwqRXVyZWthX1NhY2hhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFIJB1hSCQdYYz; H_PS_PSSID=1456_18241_17949_21084_17001_21455_21395_21377_21191_21339; BDRCVFR[X_XKQks0S63]=mk3SLVN4HKm; firstShowTip=1; indexPageSugList=%5B%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%201920x1080%22%2C%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A31080%22%2C%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%22%5D; cleanHistoryStatus=0; BDRCVFR[dG2JNJb_ajR]=mk3SLVN4HKm; BDRCVFR[-pGxjrCMryR]=mk3SLVN4HKm;',
-                          }
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.8',
+            # 'Accept-Encoding': 'gzip, deflate, sdch',
+            'Referer': 'http://image.baidu.com/search/flip',
+            'Cookie': 'BDqhfp=%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%2B1920x1080%26%260-10-1undefined%26%260%26%261; BAIDUID=CE199AC1B0DC673D5BB2C147C49FD279:FG=1; PSTM=1472647733; BIDUPSID=AB9E31BFF15379B40D2F3E260F795519; MCITY=-236%3A; BDUSS=VBbC16eUUtMURpaWQxZFNjak1nUTU0QWkzV0J1LXhRdVJHT09MVDlWWlNsaTVZSVFBQUFBJCQAAAAAAAAAAAEAAACPTAwqRXVyZWthX1NhY2hhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFIJB1hSCQdYYz; H_PS_PSSID=1456_18241_17949_21084_17001_21455_21395_21377_21191_21339; BDRCVFR[X_XKQks0S63]=mk3SLVN4HKm; firstShowTip=1; indexPageSugList=%5B%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%201920x1080%22%2C%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A31080%22%2C%22%E6%96%B0%E5%9E%A3%E7%BB%93%E8%A1%A3%22%5D; cleanHistoryStatus=0; BDRCVFR[dG2JNJb_ajR]=mk3SLVN4HKm; BDRCVFR[-pGxjrCMryR]=mk3SLVN4HKm;',
+        }
         self.data = {
             'tn': 'baiduimage',
             'ie': 'utf-8',
@@ -68,6 +68,7 @@ class baiduImgSpider:
                         self.height = int(temp[2])
                 break
             except Exception, e:
+                print '###',e.message
                 print '参数输入错误请重新输入:'
                 continue
         print '搜索关键词: %s ,分辨率: %d x %d' % (self.word, self.width, self.height)
@@ -100,21 +101,22 @@ class baiduImgSpider:
                     self.data['pn'] = str((i - 1) * 20)
                     self.headers['Referer'] = self.url + '?' + urllib.urlencode(self.data)
                     req = urllib2.Request(self.url + '?' + urllib.urlencode(self.data), headers=self.headers)
-                    Response = urllib2.urlopen(req,timeout = 2)
+                    Response = urllib2.urlopen(req, timeout=2)
                     Page = Response.read()
                     unicodePage = Page.decode("UTF-8")
                     imgurllist = re.findall(
-                        '"objURL":"(http://[^\{|^\}|^:]*\.[(jpg)?|(jpeg)?|(png)?|(tiff)?|(bmp)?|(gif)?]+)*?"',
-                        unicodePage,
-                        re.S)
+                            '"objURL":"(http://[^\{|^\}|^:]*\.[(jpg)?|(jpeg)?|(png)?|(tiff)?|(bmp)?|(gif)?]+)*?"',
+                            unicodePage,
+                            re.S)
                     for imgurl in imgurllist:
                         headers = {  # header
-                                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
-                                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                                     'Accept-Language': 'zh-CN,zh;q=0.8',
-                                     }
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'zh-CN,zh;q=0.8',
+                        }
                         try:
-                            connection = urllib2.build_opener().open(urllib2.Request(imgurl, headers=headers),timeout = 2)
+                            connection = urllib2.build_opener().open(urllib2.Request(imgurl, headers=headers),
+                                                                     timeout=2)
                         except Exception, e:
                             print '###', e
                             print '###', imgurl
@@ -148,8 +150,7 @@ class baiduImgSpider:
             for erroimg in self.erroimgs:
                 print erroimg
 
-
-    def __downloadimg(self):
+    def __downloadImg(self):
         """图片下载函数"""
         print '>>开始下载图片(共%d张)' % self.imgs.__len__()
         for img in self.imgs:
@@ -165,7 +166,7 @@ class baiduImgSpider:
                     continue
             except Exception, e:
                 print '###%s' % e
-                self.erroimgs.append('错误信息=' + str(e) + '  图片URL=' + str(img))
+                self.erroimgs.append('下载失败=' + str(e) + '  图片URL=' + str(img))
                 continue
         self.imgs = []
 
