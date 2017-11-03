@@ -1,2 +1,2 @@
-# `mypython1`
-This is my Pyton Study notes
+# `Python27Based`
+This is my Python study notes
